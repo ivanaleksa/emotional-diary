@@ -1,9 +1,11 @@
 import os
 import pickle
 import requests
+import re
+from abc import ABC, abstractmethod
+
 import xgboost as xgb
 import nltk
-from abc import ABC, abstractmethod
 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -71,7 +73,10 @@ class TFIDFEmotionalModel(AbstractModel):
             return False
     
     def _validation(self, text: str) -> bool:
-        pass
+        if re.match(r'^[a-zA-Z0-9\s.,!?\'\"]+$', text):
+            return True
+        else:
+            return False
 
     def _preprocessing(self, text: str) -> str:
         tokens = word_tokenize(text)
@@ -81,6 +86,9 @@ class TFIDFEmotionalModel(AbstractModel):
         return " ".join(tokens)
 
     def predict(self, text_input: str) -> str:
+        if not self._validation(text_input):
+            raise ValueError("Text should contain only: English lettes, punktuation or digits.")
+        
         text_input = self._preprocessing(text_input)
         vector = self.vectorizer.transform([text_input])
 
