@@ -1,4 +1,6 @@
+import os
 import pickle
+import requests
 import xgboost as xgb
 import nltk
 from abc import ABC, abstractmethod
@@ -10,8 +12,13 @@ from nltk.stem import WordNetLemmatizer
 
 class AbstractModel(ABC):
     @abstractmethod
-    def validation(self):
+    def _validation(self):
         """This method should validate input data and return preprocessed data"""
+        pass
+
+    @abstractmethod
+    def _preprocessing(self):
+        """This method should preprocess data before sending it to a model"""
         pass
 
     @abstractmethod
@@ -22,7 +29,7 @@ class AbstractModel(ABC):
 
 class TFIDFEmotionalModel(AbstractModel):
     emotions = {
-        0: "sadness", 
+        0: "sadness",
         1: "joy",
         2: "love",
         3: "anger",
@@ -31,9 +38,17 @@ class TFIDFEmotionalModel(AbstractModel):
     }
 
     def __init__(self, model_path: str, vectorizer_path: str):
-        nltk.download('punkt')
-        nltk.download('stopwords')
-        nltk.download('wordnet')
+        if self.__check_internet_connection():
+            nltk.download('punkt', download_dir="model/nltk_data")
+            nltk.download('stopwords', download_dir="model/nltk_data")
+            nltk.download('wordnet', download_dir="model/nltk_data")
+        else:
+            if not all(
+                os.path.exists(os.path.join("model/nltk_data", filename)) 
+                    for filename in ['tokenizers/punkt', 'corpora/stopwords']
+            ):
+                raise FileNotFoundError("Necessary NLTK data files are missing.")
+
         self.stop_words = set(stopwords.words('english'))
         self.lemmatizer = WordNetLemmatizer()
 
@@ -47,8 +62,18 @@ class TFIDFEmotionalModel(AbstractModel):
             raise ValueError("The model wasn't downloaded. Please, check its path")
         if self.vectorizer is None:
             raise ValueError("The text vectorizer wasn't downloaded. Please, check its path")
+        
+    def __check_internet_connection(self) -> bool:
+        try:
+            _ = requests.get("http://www.google.com", timeout=1)
+            return True
+        except requests.ConnectionError:
+            return False
     
-    def validation(self, text: str) -> str:
+    def _validation(self, text: str) -> bool:
+        pass
+
+    def _preprocessing(self, text: str) -> str:
         tokens = word_tokenize(text)
         tokens = [word.lower() for word in tokens]
         tokens = [word for word in tokens if word not in self.stop_words]
@@ -56,11 +81,7 @@ class TFIDFEmotionalModel(AbstractModel):
         return " ".join(tokens)
 
     def predict(self, text_input: str) -> str:
-        text_input = self.validation(text_input)
+        text_input = self._preprocessing(text_input)
         vector = self.vectorizer.transform([text_input])
 
         return TFIDFEmotionalModel.emotions[self.xgb_model.predict(vector)[0]]
-    
-
-model = TFIDFEmotionalModel("model/xgboost.model", "model/tfidf_vectorizer.pkl")
-print(model.predict("Today is sad, it's raining and I wanna do nothing"))

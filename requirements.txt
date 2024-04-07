@@ -5,3 +5,4 @@ seaborn==0.13.2
 gensim==4.3.2
 nltk==3.8.1
 xgboost==2.0.3
+requests==2.31.0
