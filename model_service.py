@@ -93,3 +93,11 @@ class TFIDFEmotionalModel(AbstractModel):
         vector = self.vectorizer.transform([text_input])
 
         return TFIDFEmotionalModel.emotions[self.xgb_model.predict(vector)[0]]
+
+
+if __name__ == "__main__":
+    model = TFIDFEmotionalModel("model/xgboost.model", "model/tfidf_vectorizer.pkl")
+    while True:
+        s = input("Input your text: ")
+
+        print(model.predict(s))
