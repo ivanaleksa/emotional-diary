@@ -4,8 +4,13 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QPushButton,
     QScrollArea,
-    QFrame
+    QFrame,
+    QLabel
 )
+from fileWorker import FileWorker
+
+
+FILE_WORKER = FileWorker()
 
 
 class FileBar(QScrollArea):
@@ -44,6 +49,13 @@ class FileBar(QScrollArea):
         }
     """
 
+    absentFilesLabel = """
+        QLabel {
+            color: rgba(117, 117, 117, 1);
+            font-weight: bold;
+        }
+    """
+
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
@@ -59,10 +71,15 @@ class FileBar(QScrollArea):
         filesLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         filesWidget.setStyleSheet("background: rgb(235, 235, 235); border-radius: 5px;")
 
-        # TODO fill this list with real files
-        for i in range(20):
-            btn = QPushButton(f"File {i + 1}")
-            btn.setStyleSheet(self.fileButtonStyle)
-            filesLayout.addWidget(btn)
+        files = FILE_WORKER.getFileList()
+        if not files:
+            absentFilesLabel = QLabel("There aren't any files yet")
+            absentFilesLabel.setStyleSheet(self.absentFilesLabel)
+            filesLayout.addWidget(absentFilesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+        else:
+            for i in files:
+                btn = QPushButton(i)
+                btn.setStyleSheet(self.fileButtonStyle)
+                filesLayout.addWidget(btn)
 
         self.setWidget(filesWidget)
