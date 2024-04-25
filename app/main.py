@@ -17,6 +17,7 @@ class Window(QMainWindow):
         super().__init__(parent=None)
         self.setWindowTitle("Emotional Diary")
         self.setMinimumSize(450, 300)
+        self.resize(1000, 700)
         self.setStyleSheet("background-color: white;")
 
         self.centralWidget = QWidget()
