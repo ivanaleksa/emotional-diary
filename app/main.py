@@ -28,7 +28,7 @@ class Window(QMainWindow):
         layout = QGridLayout()
         layout.addWidget(SideBar().getWidget(), 0, 0, 2, 1)
         layout.addWidget(FileBar().getScrollArea(), 0, 1, 2, 1)
-        layout.addWidget(AddButton().getAddButton(), 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(AddButton(), 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
 
         layout.setSpacing(0)
         layout.setColumnStretch(0, 1)
