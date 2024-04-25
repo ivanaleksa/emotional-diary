@@ -1,6 +1,7 @@
 import math
 from PyQt6.QtCore import QVariantAnimation
 from PyQt6.QtWidgets import QPushButton
+from fileBar import FILE_WORKER
 
 
 class AddButton(QPushButton):

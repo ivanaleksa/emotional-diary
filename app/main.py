@@ -4,12 +4,13 @@ from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow, 
     QWidget, 
-    QGridLayout, 
+    QGridLayout,
 )
 
 from sideBar import SideBar
 from fileBar import FileBar
 from addButton import AddButton
+from noteWindow import NoteWindow
 
 
 class Window(QMainWindow):
@@ -23,13 +24,17 @@ class Window(QMainWindow):
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
 
+        self.sideBar = SideBar()
+        self.fileBar = FileBar()
+        self.addButton = AddButton()
+
         self._appUp()
 
     def _appUp(self):
         layout = QGridLayout()
-        layout.addWidget(SideBar(), 0, 0, 2, 1)
-        layout.addWidget(FileBar(), 0, 1, 2, 1)
-        layout.addWidget(AddButton(), 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.sideBar, 0, 0, 2, 1)
+        layout.addWidget(self.fileBar, 0, 1, 2, 1)
+        layout.addWidget(self.addButton, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
 
         layout.setSpacing(0)
         layout.setColumnStretch(0, 1)
@@ -40,6 +45,27 @@ class Window(QMainWindow):
         layout.setRowStretch(1, 5)
 
         self.centralWidget.setLayout(layout)
+
+        self.addButton.clicked.connect(self._onAddButtonClicked)
+
+    def _onAddButtonClicked(self):
+        self.centralWidget.layout().removeWidget(self.addButton)
+        self.addButton.deleteLater()
+
+        
+        self.note_window = NoteWindow()
+        self.note_window.header.closeRequested.connect(self.note_window._onCloseRequested)
+        self.note_window.windowClosed.connect(self._onNoteWindowClosed)
+        self.centralWidget.layout().addLayout(self.note_window, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+
+    def _onNoteWindowClosed(self):
+        # TODO: this removal doesn't work
+        self.centralWidget.layout().removeItem(self.note_window)
+        self.note_window.deleteLater()
+
+        self.addButton = AddButton()
+        self.centralWidget.layout().addWidget(self.addButton, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+
 
 if __name__ == "__main__":
     app = QApplication([])
