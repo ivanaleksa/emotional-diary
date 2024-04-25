@@ -11,9 +11,12 @@ from PyQt6.QtWidgets import (
 class FileBar:
     fileButtonStyle = """
         QPushButton {
-            border: 1px solid #8B8B8B;
+            border: none;
             border-radius: 5px;
             padding: 5px;
+            text-align: left;
+            color: rgba(117, 117, 117, 1);
+            font-weight: bold;
         }
         QPushButton:hover{
             background-color: #d9d9d9;
@@ -53,6 +56,7 @@ class FileBar:
         filesLayout.setSpacing(0)
         filesLayout.setContentsMargins(0, 0, 0, 0)
         filesLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        filesWidget.setStyleSheet("background: rgb(235, 235, 235); border-radius: 5px;")
 
         # TODO fill this list with real files
         for i in range(20):

@@ -36,7 +36,6 @@ class SideBar:
         self.sideBar.setLayout(sideBarLayout)
         sideBarLayout.addWidget(analiticsButton, alignment=Qt.AlignmentFlag.AlignHCenter)
         sideBarLayout.addWidget(filesButton, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.sideBar.setStyleSheet("border-right: 1px solid #8B8B8B;")
     
     def getWidget(self) -> QWidget:
         return self.sideBar
