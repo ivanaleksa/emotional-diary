@@ -8,12 +8,15 @@ from PyQt6.QtWidgets import (
 )
 
 
-class FileBar:
+class FileBar(QScrollArea):
     fileButtonStyle = """
         QPushButton {
-            border: 1px solid #8B8B8B;
+            border: none;
             border-radius: 5px;
             padding: 5px;
+            text-align: left;
+            color: rgba(117, 117, 117, 1);
+            font-weight: bold;
         }
         QPushButton:hover{
             background-color: #d9d9d9;
@@ -41,18 +44,20 @@ class FileBar:
         }
     """
 
-    def __init__(self):
-        self.scrollArea = QScrollArea()
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scrollArea.setFrameStyle(QFrame.Shape.NoFrame)
-        self.scrollArea.setStyleSheet(self.scrollAreaStyle)
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+
+        self.setWidgetResizable(True)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setFrameStyle(QFrame.Shape.NoFrame)
+        self.setStyleSheet(self.scrollAreaStyle)
 
         filesWidget = QWidget()
         filesLayout = QVBoxLayout(filesWidget)
         filesLayout.setSpacing(0)
         filesLayout.setContentsMargins(0, 0, 0, 0)
         filesLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        filesWidget.setStyleSheet("background: rgb(235, 235, 235); border-radius: 5px;")
 
         # TODO fill this list with real files
         for i in range(20):
@@ -60,7 +65,4 @@ class FileBar:
             btn.setStyleSheet(self.fileButtonStyle)
             filesLayout.addWidget(btn)
 
-        self.scrollArea.setWidget(filesWidget)
-
-    def getScrollArea(self) -> QScrollArea:
-        return self.scrollArea
+        self.setWidget(filesWidget)

@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 
-class SideBar:
+class SideBar(QWidget):
     buttonStyle = """
         QPushButton {
             border: none;
@@ -21,7 +21,9 @@ class SideBar:
         }
     """
 
-    def __init__(self):
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+
         """ Set all buttons' settings """
         filesButton, analiticsButton = QPushButton(), QPushButton()
         filesButton.setIcon(QIcon("app/media/files_icon.png"))
@@ -31,12 +33,7 @@ class SideBar:
         filesButton.setStyleSheet(self.buttonStyle)
         analiticsButton.setStyleSheet(self.buttonStyle)
 
-        self.sideBar = QWidget()
         sideBarLayout = QVBoxLayout()
-        self.sideBar.setLayout(sideBarLayout)
+        self.setLayout(sideBarLayout)
         sideBarLayout.addWidget(analiticsButton, alignment=Qt.AlignmentFlag.AlignHCenter)
         sideBarLayout.addWidget(filesButton, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.sideBar.setStyleSheet("border-right: 1px solid #8B8B8B;")
-    
-    def getWidget(self) -> QWidget:
-        return self.sideBar
