@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 )
 
 
-class FileBar:
+class FileBar(QScrollArea):
     fileButtonStyle = """
         QPushButton {
             border: none;
@@ -44,12 +44,13 @@ class FileBar:
         }
     """
 
-    def __init__(self):
-        self.scrollArea = QScrollArea()
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scrollArea.setFrameStyle(QFrame.Shape.NoFrame)
-        self.scrollArea.setStyleSheet(self.scrollAreaStyle)
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+
+        self.setWidgetResizable(True)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setFrameStyle(QFrame.Shape.NoFrame)
+        self.setStyleSheet(self.scrollAreaStyle)
 
         filesWidget = QWidget()
         filesLayout = QVBoxLayout(filesWidget)
@@ -64,7 +65,4 @@ class FileBar:
             btn.setStyleSheet(self.fileButtonStyle)
             filesLayout.addWidget(btn)
 
-        self.scrollArea.setWidget(filesWidget)
-
-    def getScrollArea(self) -> QScrollArea:
-        return self.scrollArea
+        self.setWidget(filesWidget)

@@ -26,8 +26,8 @@ class Window(QMainWindow):
 
     def _appUp(self):
         layout = QGridLayout()
-        layout.addWidget(SideBar().getWidget(), 0, 0, 2, 1)
-        layout.addWidget(FileBar().getScrollArea(), 0, 1, 2, 1)
+        layout.addWidget(SideBar(), 0, 0, 2, 1)
+        layout.addWidget(FileBar(), 0, 1, 2, 1)
         layout.addWidget(AddButton(), 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
 
         layout.setSpacing(0)
