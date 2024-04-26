@@ -24,17 +24,22 @@ class Window(QMainWindow):
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
 
-        self.sideBar = SideBar()
-        self.fileBar = FileBar()
-        self.addButton = AddButton()
-
         self._appUp()
 
     def _appUp(self):
+        self.sideBar = SideBar()
+        self.fileBar = FileBar()
+        self.addButton = AddButton()
+        self.note_window = NoteWindow()
+        self.note_window.header.closeRequested.connect(self.note_window._onCloseRequested)
+        self.note_window.windowClosed.connect(self._onNoteWindowClosed)
+        self.note_window.setVisible(False)
+
         layout = QGridLayout()
         layout.addWidget(self.sideBar, 0, 0, 2, 1)
         layout.addWidget(self.fileBar, 0, 1, 2, 1)
         layout.addWidget(self.addButton, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.note_window, 0, 2, 2, 2)
 
         layout.setSpacing(0)
         layout.setColumnStretch(0, 1)
@@ -49,22 +54,12 @@ class Window(QMainWindow):
         self.addButton.clicked.connect(self._onAddButtonClicked)
 
     def _onAddButtonClicked(self):
-        self.centralWidget.layout().removeWidget(self.addButton)
-        self.addButton.deleteLater()
-
-        
-        self.note_window = NoteWindow()
-        self.note_window.header.closeRequested.connect(self.note_window._onCloseRequested)
-        self.note_window.windowClosed.connect(self._onNoteWindowClosed)
-        self.centralWidget.layout().addLayout(self.note_window, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.addButton.setVisible(False)
+        self.note_window.setVisible(True)
 
     def _onNoteWindowClosed(self):
-        # TODO: this removal doesn't work
-        self.centralWidget.layout().removeItem(self.note_window)
-        self.note_window.deleteLater()
-
-        self.addButton = AddButton()
-        self.centralWidget.layout().addWidget(self.addButton, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.note_window.setVisible(False)
+        self.addButton.setVisible(True)
 
 
 if __name__ == "__main__":

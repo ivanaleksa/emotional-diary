@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 )
 
 
-class NoteWindow(QVBoxLayout):
+class NoteWindow(QWidget):
     windowClosed = pyqtSignal()
 
     titleInputStyles = """
@@ -74,9 +74,12 @@ class NoteWindow(QVBoxLayout):
         self.header.closeRequested.connect(self._onCloseRequested)
         headerWidget.setLayout(self.header)
 
-        self.addWidget(headerWidget)
-        self.addWidget(titleField)
-        self.addWidget(contentField)
+        layout = QVBoxLayout()
+        layout.addWidget(headerWidget)
+        layout.addWidget(titleField)
+        layout.addWidget(contentField)
+
+        self.setLayout(layout)
     
     def _onTextChanged(self):
         # TODO: this methis is needed for automate saving of a document
