@@ -30,6 +30,7 @@ class AddButton(QPushButton):
         self.setText("+")
         self.setFixedSize(75, 75)
         self._angle = 0
+        self.setToolTip("Create new note")
         self.setStyleSheet(self._generate_style())
 
         self.animation = QVariantAnimation()
