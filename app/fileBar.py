@@ -71,13 +71,13 @@ class FileBar(QScrollArea):
         filesLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         filesWidget.setStyleSheet("background: rgb(235, 235, 235); border-radius: 5px;")
 
-        files = FILE_WORKER.getFileList()
+        files: dict = FILE_WORKER.getFileList()
         if not files:
             absentFilesLabel = QLabel("There aren't any files yet")
             absentFilesLabel.setStyleSheet(self.absentFilesLabel)
             filesLayout.addWidget(absentFilesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
         else:
-            for i in files:
+            for i in files.keys():
                 btn = QPushButton(i)
                 btn.setStyleSheet(self.fileButtonStyle)
                 filesLayout.addWidget(btn)

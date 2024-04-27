@@ -18,7 +18,7 @@ class FileWorker:
         if not os.path.exists(self.notesDirectory):
             os.makedirs(self.notesDirectory)
             with open(self.notesDirectory + "/" + self.metaFile, "w") as f:
-                json.dump([], f)
+                json.dump({}, f)
         
         with open(self.notesDirectory + "/" + self.metaFile, "r") as f:
             self.filesInfo: list = json.load(f)
@@ -41,9 +41,10 @@ class FileWorker:
             raise FileExistsError("There is already a file with this title")
         
         self.filesInfo.append({
-            "title": title,
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "emotion": emotion
+            title: {
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "emotion": emotion
+            }
         })
 
         with open(self.notesDirectory + "/" + title + ".txt", "w", encoding="utf-8") as file:
@@ -56,10 +57,10 @@ class FileWorker:
         self._updateMetaInfo()
 
     def getFileList(self) -> list[str]:
-        return [f["title"] for f in self.filesInfo]
+        return self.filesInfo
     
     def getFileInfo(self, title: str):
-        """ Returns a dict with fields: title, content, date, emotion"""
+        """ Returns a dict with fields: content, date, emotion"""
 
         for f in self.filesInfo:
             if f["title"] == title:
@@ -67,7 +68,6 @@ class FileWorker:
                     content = "".join([line for line in file.readlines()])
                 
                 return {
-                    "title": f["title"],
                     "content": content,
                     "date": f["date"],
                     "emotion": f["emotion"]
