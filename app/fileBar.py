@@ -64,22 +64,28 @@ class FileBar(QScrollArea):
         self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setStyleSheet(self.scrollAreaStyle)
 
-        filesWidget = QWidget()
-        filesLayout = QVBoxLayout(filesWidget)
-        filesLayout.setSpacing(0)
-        filesLayout.setContentsMargins(0, 0, 0, 0)
-        filesLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        filesWidget.setStyleSheet("background: rgb(235, 235, 235); border-radius: 5px;")
+        self.filesWidget = QWidget()
+        self.filesLayout = QVBoxLayout(self.filesWidget)
+        self.filesLayout.setSpacing(0)
+        self.filesLayout.setContentsMargins(0, 0, 0, 0)
+        self.filesLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.filesWidget.setStyleSheet("background: rgb(235, 235, 235); border-radius: 5px;")
 
+        self.showenFiles: list = []
+        self.updateFileList()
+
+        self.setWidget(self.filesWidget)
+    
+    def updateFileList(self):
         files: dict = FILE_WORKER.getFileList()
         if not files:
             absentFilesLabel = QLabel("There aren't any files yet")
             absentFilesLabel.setStyleSheet(self.absentFilesLabel)
-            filesLayout.addWidget(absentFilesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+            self.filesLayout.addWidget(absentFilesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
         else:
             for i in files.keys():
-                btn = QPushButton(i)
-                btn.setStyleSheet(self.fileButtonStyle)
-                filesLayout.addWidget(btn)
-
-        self.setWidget(filesWidget)
+                if i not in self.showenFiles:
+                    btn = QPushButton(i)
+                    btn.setStyleSheet(self.fileButtonStyle)
+                    self.filesLayout.addWidget(btn)
+                    self.showenFiles.append(i)

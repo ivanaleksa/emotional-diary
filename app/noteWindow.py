@@ -10,6 +10,8 @@ from PyQt6.QtWidgets import (
     QPushButton
 )
 
+from fileBar import FILE_WORKER
+
 
 class NoteWindow(QWidget):
     windowClosed = pyqtSignal()
@@ -60,14 +62,14 @@ class NoteWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        titleField = QLineEdit()
-        titleField.setPlaceholderText("Title")
-        titleField.setStyleSheet(self.titleInputStyles)
+        self.titleField = QLineEdit()
+        self.titleField.setPlaceholderText("Title")
+        self.titleField.setStyleSheet(self.titleInputStyles)
 
-        contentField = QTextEdit()
-        contentField.setPlaceholderText("Your thoughts here...")
-        contentField.setStyleSheet(self.contentInputStyles)
-        contentField.textChanged.connect(self._onTextChanged)
+        self.contentField = QTextEdit()
+        self.contentField.setPlaceholderText("Your thoughts here...")
+        self.contentField.setStyleSheet(self.contentInputStyles)
+        self.contentField.textChanged.connect(self._onContentChanged)
 
         headerWidget = QWidget()
         self.header = NoteWindowHeader()
@@ -76,14 +78,14 @@ class NoteWindow(QWidget):
 
         layout = QVBoxLayout()
         layout.addWidget(headerWidget)
-        layout.addWidget(titleField)
-        layout.addWidget(contentField)
+        layout.addWidget(self.titleField)
+        layout.addWidget(self.contentField)
 
         self.setLayout(layout)
     
-    def _onTextChanged(self):
-        # TODO: this methis is needed for automate saving of a document
-        pass
+    def _onContentChanged(self):
+        if self.contentField.toPlainText():
+            FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText())
 
     def _onCloseRequested(self):
         self.windowClosed.emit()

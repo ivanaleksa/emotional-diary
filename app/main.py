@@ -60,6 +60,7 @@ class Window(QMainWindow):
     def _onNoteWindowClosed(self):
         self.note_window.setVisible(False)
         self.addButton.setVisible(True)
+        self.fileBar.updateFileList()
 
 
 if __name__ == "__main__":
