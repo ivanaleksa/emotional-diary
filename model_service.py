@@ -86,8 +86,8 @@ class TFIDFEmotionalModel(AbstractModel):
         return " ".join(tokens)
 
     def predict(self, text_input: str) -> str:
-        if not self._validation(text_input):
-            raise ValueError("Text should contain only: English lettes, punktuation or digits.")
+        # if not self._validation(text_input):
+        #     raise ValueError("Text should contain only: English lettes, punktuation or digits.")
         
         text_input = self._preprocessing(text_input)
         vector = self.vectorizer.transform([text_input])

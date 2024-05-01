@@ -7,10 +7,16 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QTextEdit,
     QLabel,
-    QPushButton
+    QPushButton,
+    QApplication
 )
 
-from fileBar import FILE_WORKER
+from .fileBar import FILE_WORKER
+from .preloaderDialog import LoadingDialog
+from ..model_service import TFIDFEmotionalModel
+
+
+PREDICTION_MODEL = TFIDFEmotionalModel(model_path="emotion_analyser/model/xgboost.model", vectorizer_path="emotion_analyser/model/tfidf_vectorizer.pkl")
 
 
 class NoteWindow(QWidget):
@@ -73,6 +79,7 @@ class NoteWindow(QWidget):
 
         headerWidget = QWidget()
         self.header = NoteWindowHeader()
+        self.header.textChanged.connect(self._predictText)
         self.header.closeRequested.connect(self._onCloseRequested)
         headerWidget.setLayout(self.header)
 
@@ -93,10 +100,25 @@ class NoteWindow(QWidget):
         self.header.emotionContainer.setText("")
 
         self.windowClosed.emit()
+    
+    def _predictText(self, text):
+        # TODO: animation doesn't work
+        loadingDialog = LoadingDialog(self)
+        loadingDialog.show()
+
+        QApplication.processEvents()
+
+        prediction = PREDICTION_MODEL.predict(text)
+
+        loadingDialog.close()
+
+        self.header.emotionContainer.setText(prediction)
+        FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText(), self.header.emotionContainer.text())
 
 
 class NoteWindowHeader(QHBoxLayout):
     closeRequested = pyqtSignal()
+    textChanged = pyqtSignal(str)
 
     buttonStyles = """
         QPushButton {
@@ -123,15 +145,16 @@ class NoteWindowHeader(QHBoxLayout):
         self.emotionContainer = QLabel()
 
         self.closeBtn = QPushButton()
-        self.closeBtn.setIcon(QIcon("app/media/close_icon.png"))
+        self.closeBtn.setIcon(QIcon("emotion_analyser/app/media/close_icon.png"))
         self.closeBtn.setIconSize(QSize(25, 25))
         self.closeBtn.setStyleSheet(self.closeButtonStyles)
         self.closeBtn.clicked.connect(self._closeButtonClicked)
 
         self.analyseBtn = QPushButton()
-        self.analyseBtn.setIcon(QIcon("app/media/analyse_icon.png"))
+        self.analyseBtn.setIcon(QIcon("emotion_analyser/app/media/analyse_icon.png"))
         self.analyseBtn.setIconSize(QSize(25, 25))
         self.analyseBtn.setStyleSheet(self.analyseButtonStyles)
+        self.analyseBtn.clicked.connect(self._analyseNoteClicked)
 
         self.addWidget(self.emotionContainer, 10)
         self.addWidget(self.analyseBtn, 3)
@@ -139,3 +162,6 @@ class NoteWindowHeader(QHBoxLayout):
     
     def _closeButtonClicked(self):
         self.closeRequested.emit()
+
+    def _analyseNoteClicked(self):
+        self.textChanged.emit(self.parent().parent().contentField.toPlainText())

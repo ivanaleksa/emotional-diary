@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QFrame,
     QLabel
 )
-from fileWorker import FileWorker
+from .fileWorker import FileWorker
 
 
 FILE_WORKER = FileWorker()

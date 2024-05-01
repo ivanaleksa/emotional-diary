@@ -7,10 +7,10 @@ from PyQt6.QtWidgets import (
     QGridLayout,
 )
 
-from sideBar import SideBar
-from fileBar import FileBar
-from addButton import AddButton
-from noteWindow import NoteWindow
+from .sideBar import SideBar
+from .fileBar import FileBar
+from .addButton import AddButton
+from .noteWindow import NoteWindow
 
 
 class Window(QMainWindow):
@@ -57,10 +57,12 @@ class Window(QMainWindow):
         self.addButton.setVisible(False)
         self.note_window.setVisible(True)
 
+        # TODO: update title only when focus is out of its container and the same with content container
+        self.fileBar.updateFileList()
+
     def _onNoteWindowClosed(self):
         self.note_window.setVisible(False)
         self.addButton.setVisible(True)
-        self.fileBar.updateFileList()
 
 
 if __name__ == "__main__":

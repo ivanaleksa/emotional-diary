@@ -6,7 +6,7 @@ from datetime import datetime
 
 class FileWorker:
     __instance = None
-    notesDirectory: str = "UserNotes"
+    notesDirectory: str = "emotion_analyser/UserNotes"
     metaFile: str = "meta_info.json"
     prohibitedChars: list = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '+']
 
