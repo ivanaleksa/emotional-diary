@@ -76,18 +76,22 @@ class NoteWindow(QWidget):
         self.header.closeRequested.connect(self._onCloseRequested)
         headerWidget.setLayout(self.header)
 
-        layout = QVBoxLayout()
-        layout.addWidget(headerWidget)
-        layout.addWidget(self.titleField)
-        layout.addWidget(self.contentField)
+        self.emLayout = QVBoxLayout()
+        self.emLayout.addWidget(headerWidget)
+        self.emLayout.addWidget(self.titleField)
+        self.emLayout.addWidget(self.contentField)
 
-        self.setLayout(layout)
+        self.setLayout(self.emLayout)
     
     def _onContentChanged(self):
         if self.contentField.toPlainText():
             FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText())
 
     def _onCloseRequested(self):
+        self.titleField.setText("")
+        self.contentField.setText("")
+        self.header.emotionContainer.setText("")
+
         self.windowClosed.emit()
 
 
@@ -116,22 +120,22 @@ class NoteWindowHeader(QHBoxLayout):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        emotionContainer = QLabel("Some emotion here")
+        self.emotionContainer = QLabel()
 
-        closeBtn = QPushButton()
-        closeBtn.setIcon(QIcon("app/media/close_icon.png"))
-        closeBtn.setIconSize(QSize(25, 25))
-        closeBtn.setStyleSheet(self.closeButtonStyles)
-        closeBtn.clicked.connect(self._closeButtonClicked)
+        self.closeBtn = QPushButton()
+        self.closeBtn.setIcon(QIcon("app/media/close_icon.png"))
+        self.closeBtn.setIconSize(QSize(25, 25))
+        self.closeBtn.setStyleSheet(self.closeButtonStyles)
+        self.closeBtn.clicked.connect(self._closeButtonClicked)
 
-        analyseBtn = QPushButton()
-        analyseBtn.setIcon(QIcon("app/media/analyse_icon.png"))
-        analyseBtn.setIconSize(QSize(25, 25))
-        analyseBtn.setStyleSheet(self.analyseButtonStyles)
+        self.analyseBtn = QPushButton()
+        self.analyseBtn.setIcon(QIcon("app/media/analyse_icon.png"))
+        self.analyseBtn.setIconSize(QSize(25, 25))
+        self.analyseBtn.setStyleSheet(self.analyseButtonStyles)
 
-        self.addWidget(emotionContainer, 10)
-        self.addWidget(analyseBtn, 3)
-        self.addWidget(closeBtn, 1)
+        self.addWidget(self.emotionContainer, 10)
+        self.addWidget(self.analyseBtn, 3)
+        self.addWidget(self.closeBtn, 1)
     
     def _closeButtonClicked(self):
         self.closeRequested.emit()
