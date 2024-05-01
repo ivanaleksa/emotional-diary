@@ -49,7 +49,7 @@ class FileBar(QScrollArea):
         }
     """
 
-    absentFilesLabel = """
+    absentFilesLabelStyles = """
         QLabel {
             color: rgba(117, 117, 117, 1);
             font-weight: bold;
@@ -71,6 +71,11 @@ class FileBar(QScrollArea):
         self.filesLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.filesWidget.setStyleSheet("background: rgb(235, 235, 235); border-radius: 5px;")
 
+        self.absentFilesLabel = QLabel("There aren't any files yet")
+        self.absentFilesLabel.setStyleSheet(self.absentFilesLabelStyles)
+        self.absentFilesLabel.setVisible(False)
+        self.filesLayout.addWidget(self.absentFilesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+
         self.showenFiles: list = []
         self.updateFileList()
 
@@ -79,10 +84,9 @@ class FileBar(QScrollArea):
     def updateFileList(self):
         files: dict = FILE_WORKER.getFileList()
         if not files:
-            absentFilesLabel = QLabel("There aren't any files yet")
-            absentFilesLabel.setStyleSheet(self.absentFilesLabel)
-            self.filesLayout.addWidget(absentFilesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+            self.absentFilesLabel.setVisible(True)
         else:
+            self.absentFilesLabel.setVisible(False)
             for i in files.keys():
                 if i not in self.showenFiles:
                     btn = QPushButton(i)
