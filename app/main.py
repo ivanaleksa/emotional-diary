@@ -4,12 +4,13 @@ from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow, 
     QWidget, 
-    QGridLayout, 
+    QGridLayout,
 )
 
-from sideBar import SideBar
-from fileBar import FileBar
-from addButton import AddButton
+from .sideBar import SideBar
+from .fileBar import FileBar
+from .addButton import AddButton
+from .noteWindow import NoteWindow
 
 
 class Window(QMainWindow):
@@ -26,10 +27,19 @@ class Window(QMainWindow):
         self._appUp()
 
     def _appUp(self):
+        self.sideBar = SideBar()
+        self.fileBar = FileBar()
+        self.addButton = AddButton()
+        self.note_window = NoteWindow()
+        self.note_window.header.closeRequested.connect(self.note_window._onCloseRequested)
+        self.note_window.windowClosed.connect(self._onNoteWindowClosed)
+        self.note_window.setVisible(False)
+
         layout = QGridLayout()
-        layout.addWidget(SideBar(), 0, 0, 2, 1)
-        layout.addWidget(FileBar(), 0, 1, 2, 1)
-        layout.addWidget(AddButton(), 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.sideBar, 0, 0, 2, 1)
+        layout.addWidget(self.fileBar, 0, 1, 2, 1)
+        layout.addWidget(self.addButton, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.note_window, 0, 2, 2, 2)
 
         layout.setSpacing(0)
         layout.setColumnStretch(0, 1)
@@ -40,6 +50,19 @@ class Window(QMainWindow):
         layout.setRowStretch(1, 5)
 
         self.centralWidget.setLayout(layout)
+
+        self.addButton.clicked.connect(self._onAddButtonClicked)
+
+    def _onAddButtonClicked(self):
+        self.addButton.setVisible(False)
+        self.note_window.setVisible(True)
+
+    def _onNoteWindowClosed(self):
+        self.note_window.setVisible(False)
+        self.addButton.setVisible(True)
+
+        self.fileBar.updateFileList()
+
 
 if __name__ == "__main__":
     app = QApplication([])

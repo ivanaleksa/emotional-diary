@@ -4,8 +4,13 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QPushButton,
     QScrollArea,
-    QFrame
+    QFrame,
+    QLabel
 )
+from .fileWorker import FileWorker
+
+
+FILE_WORKER = FileWorker()
 
 
 class FileBar(QScrollArea):
@@ -44,6 +49,13 @@ class FileBar(QScrollArea):
         }
     """
 
+    absentFilesLabelStyles = """
+        QLabel {
+            color: rgba(117, 117, 117, 1);
+            font-weight: bold;
+        }
+    """
+
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
@@ -52,17 +64,33 @@ class FileBar(QScrollArea):
         self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setStyleSheet(self.scrollAreaStyle)
 
-        filesWidget = QWidget()
-        filesLayout = QVBoxLayout(filesWidget)
-        filesLayout.setSpacing(0)
-        filesLayout.setContentsMargins(0, 0, 0, 0)
-        filesLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        filesWidget.setStyleSheet("background: rgb(235, 235, 235); border-radius: 5px;")
+        self.filesWidget = QWidget()
+        self.filesLayout = QVBoxLayout(self.filesWidget)
+        self.filesLayout.setSpacing(0)
+        self.filesLayout.setContentsMargins(0, 0, 0, 0)
+        self.filesLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.filesWidget.setStyleSheet("background: rgb(235, 235, 235); border-radius: 5px;")
 
-        # TODO fill this list with real files
-        for i in range(20):
-            btn = QPushButton(f"File {i + 1}")
-            btn.setStyleSheet(self.fileButtonStyle)
-            filesLayout.addWidget(btn)
+        self.absentFilesLabel = QLabel("There aren't any files yet")
+        self.absentFilesLabel.setStyleSheet(self.absentFilesLabelStyles)
+        self.absentFilesLabel.setVisible(False)
+        self.filesLayout.addWidget(self.absentFilesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        self.setWidget(filesWidget)
+        self.showenFiles: list = []
+        self.updateFileList()
+
+        self.setWidget(self.filesWidget)
+    
+    def updateFileList(self):
+        files: dict = FILE_WORKER.getFileList()
+        if not files:
+            self.absentFilesLabel.setVisible(True)
+        else:
+            self.absentFilesLabel.setVisible(False)
+            for i in files.keys():
+                if i not in self.showenFiles:
+                    btn = QPushButton(i)
+                    btn.setStyleSheet(self.fileButtonStyle)
+                    btn.setToolTip(f"{files[i]['date']}\n{' ,'.join(files[i]['emotion'])}")
+                    self.filesLayout.addWidget(btn)
+                    self.showenFiles.append(i)
