@@ -59,7 +59,7 @@ class FileWorker:
         os.remove(self.notesDirectory + "/" + title)
         self._updateMetaInfo()
 
-    def getFileList(self) -> list[str]:
+    def getFileList(self) -> dict:
         return self.filesInfo
     
     def getFileInfo(self, title: str):
