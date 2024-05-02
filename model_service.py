@@ -41,12 +41,12 @@ class TFIDFEmotionalModel(AbstractModel):
 
     def __init__(self, model_path: str, vectorizer_path: str):
         if self.__check_internet_connection():
-            nltk.download('punkt', download_dir="model/nltk_data")
-            nltk.download('stopwords', download_dir="model/nltk_data")
-            nltk.download('wordnet', download_dir="model/nltk_data")
+            nltk.download('punkt', download_dir="emotion_analyser/model/nltk_data")
+            nltk.download('stopwords', download_dir="emotion_analyser/model/nltk_data")
+            nltk.download('wordnet', download_dir="emotion_analyser/model/nltk_data")
         else:
             if not all(
-                os.path.exists(os.path.join("model/nltk_data", filename)) 
+                os.path.exists(os.path.join("emotion_analyser/model/nltk_data", filename)) 
                     for filename in ['tokenizers/punkt', 'corpora/stopwords']
             ):
                 raise FileNotFoundError("Necessary NLTK data files are missing.")
