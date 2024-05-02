@@ -1,3 +1,5 @@
+from functools import partial
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QWidget, 
@@ -5,8 +7,10 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QScrollArea,
     QFrame,
-    QLabel
+    QLabel,
+    QMenu,
 )
+
 from .fileWorker import FileWorker
 
 
@@ -28,6 +32,9 @@ class FileBar(QScrollArea):
         }
         QPushButton:pressed{
             background-color: #b3b3b3;
+        }
+        QPushButton::menu-indicator{
+              image: none;
         }
     """
 
@@ -77,6 +84,7 @@ class FileBar(QScrollArea):
         self.filesLayout.addWidget(self.absentFilesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.showenFiles: list = []
+        self.buttons = {}
         self.updateFileList()
 
         self.setWidget(self.filesWidget)
@@ -92,5 +100,21 @@ class FileBar(QScrollArea):
                     btn = QPushButton(i)
                     btn.setStyleSheet(self.fileButtonStyle)
                     btn.setToolTip(f"{files[i]['date']}\n{' ,'.join(files[i]['emotion'])}")
+                    
+                    menu = QMenu(btn)
+                    deleteAction = menu.addAction("Delete")
+                    deleteAction.triggered.connect(partial(self._deleteNote, i))
+
+                    btn.setMenu(menu)
+
                     self.filesLayout.addWidget(btn)
                     self.showenFiles.append(i)
+                    self.buttons[i] = btn
+    
+    def _deleteNote(self, fileName):
+        FILE_WORKER.deleteNode(fileName + ".txt")
+        del self.showenFiles[self.showenFiles.index(fileName)]
+        self.buttons[fileName].deleteLater()
+        
+        if len(self.showenFiles) == 0:
+            self.absentFilesLabel.setVisible(True)
