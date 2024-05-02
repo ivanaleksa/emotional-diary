@@ -57,12 +57,11 @@ class Window(QMainWindow):
         self.addButton.setVisible(False)
         self.note_window.setVisible(True)
 
-        # TODO: update title only when focus is out of its container and the same with content container
-        self.fileBar.updateFileList()
-
     def _onNoteWindowClosed(self):
         self.note_window.setVisible(False)
         self.addButton.setVisible(True)
+
+        self.fileBar.updateFileList()
 
 
 if __name__ == "__main__":
