@@ -47,7 +47,7 @@ class FileWorker:
             
             self.filesInfo[title] = {
                     "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "emotion": emotion
+                    "emotion": [emotion]
                     }
 
             with open(self.notesDirectory + "/" + title + ".txt", "w", encoding="utf-8") as file:

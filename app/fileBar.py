@@ -91,6 +91,6 @@ class FileBar(QScrollArea):
                 if i not in self.showenFiles:
                     btn = QPushButton(i)
                     btn.setStyleSheet(self.fileButtonStyle)
-                    btn.setToolTip(f"{files[i]['date']}\n{files[i]['emotion']}")
+                    btn.setToolTip(f"{files[i]['date']}\n{' ,'.join(files[i]['emotion'])}")
                     self.filesLayout.addWidget(btn)
                     self.showenFiles.append(i)
