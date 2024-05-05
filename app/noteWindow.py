@@ -68,9 +68,12 @@ class NoteWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.previousTitle = ""
+
         self.titleField = QLineEdit()
         self.titleField.setPlaceholderText("Title")
         self.titleField.setStyleSheet(self.titleInputStyles)
+        self.titleField.textChanged.connect(self._onTitleChanged)
 
         self.contentField = QTextEdit()
         self.contentField.setPlaceholderText("Your thoughts here...")
@@ -93,6 +96,15 @@ class NoteWindow(QWidget):
     def _onContentChanged(self):
         if self.contentField.toPlainText():
             FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText())
+    
+    def _onTitleChanged(self):
+        if self.titleField.text() and self.previousTitle != self.titleField.text():
+            FILE_WORKER.changeNoteTitle(self.previousTitle, self.titleField.text())
+
+            # if a user change the note's title and then doesn't change content, the previous title will be saves
+            # to avoid that, let's save all note again
+            FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText())
+            self.previousTitle = self.titleField.text()
 
     def _onCloseRequested(self):
         self.titleField.setText("")

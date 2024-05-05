@@ -58,6 +58,10 @@ class FileWorker:
     def deleteNode(self, title: str):
         os.remove(self.notesDirectory + "/" + title)
         self._updateMetaInfo()
+    
+    def changeNoteTitle(self, prevTitle: str, newTitle: str):
+        if os.path.exists(self.notesDirectory + "/" + prevTitle + ".txt"):
+            os.rename(self.notesDirectory + "/" + prevTitle + ".txt", self.notesDirectory + "/" + newTitle + ".txt")
 
     def getFileList(self) -> dict:
         return self.filesInfo
