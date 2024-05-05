@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QFrame,
     QLabel,
     QMenu,
+    QMessageBox
 )
 
 from .fileWorker import FileWorker
@@ -112,9 +113,16 @@ class FileBar(QScrollArea):
                     self.buttons[i] = btn
     
     def _deleteNote(self, fileName):
-        FILE_WORKER.deleteNode(fileName + ".txt")
-        del self.showenFiles[self.showenFiles.index(fileName)]
-        self.buttons[fileName].deleteLater()
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle("Delete confirmation")
+        msgBox.setText(f"Are you sure you want to delete {fileName} note? It'll be irrevocably deleted!")
+        msgBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msgBox.setDefaultButton(QMessageBox.StandardButton.No)
         
+        if msgBox.exec() == QMessageBox.StandardButton.Yes:
+            FILE_WORKER.deleteNode(fileName + ".txt")
+            del self.showenFiles[self.showenFiles.index(fileName)]
+            self.buttons[fileName].deleteLater()
+
         if len(self.showenFiles) == 0:
             self.absentFilesLabel.setVisible(True)
