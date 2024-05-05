@@ -146,12 +146,14 @@ class NoteWindowHeader(QHBoxLayout):
 
         self.closeBtn = QPushButton()
         self.closeBtn.setIcon(QIcon("emotion_analyser/app/media/close_icon.png"))
+        self.closeBtn.setToolTip("Save and Close the note")
         self.closeBtn.setIconSize(QSize(25, 25))
         self.closeBtn.setStyleSheet(self.closeButtonStyles)
         self.closeBtn.clicked.connect(self._closeButtonClicked)
 
         self.analyseBtn = QPushButton()
         self.analyseBtn.setIcon(QIcon("emotion_analyser/app/media/analyse_icon.png"))
+        self.analyseBtn.setToolTip("Analyse the note")
         self.analyseBtn.setIconSize(QSize(25, 25))
         self.analyseBtn.setStyleSheet(self.analyseButtonStyles)
         self.analyseBtn.clicked.connect(self._analyseNoteClicked)
