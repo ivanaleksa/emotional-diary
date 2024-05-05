@@ -64,6 +64,21 @@ class FileBar(QScrollArea):
         }
     """
 
+    menuStyles = """
+        QMenu {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            font-weight: bold;
+        }
+        QMenu::item:selected {
+            background-color: #d3d3d3;
+            color: black;
+        }
+        QMenu::item:pressed {
+            background-color: rgb(122, 122, 122);
+        }
+    """
+
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
@@ -103,6 +118,7 @@ class FileBar(QScrollArea):
                     btn.setToolTip(f"{files[i]['date']}\n{' ,'.join(files[i]['emotion'])}")
                     
                     menu = QMenu(btn)
+                    menu.setStyleSheet(self.menuStyles)
                     deleteAction = menu.addAction("Delete")
                     deleteAction.triggered.connect(partial(self._deleteNote, i))
 
