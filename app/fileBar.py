@@ -1,6 +1,6 @@
 from functools import partial
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QWidget, 
     QVBoxLayout,
@@ -19,6 +19,8 @@ FILE_WORKER = FileWorker()
 
 
 class FileBar(QScrollArea):
+    openNoteRequested = pyqtSignal(str)
+
     fileButtonStyle = """
         QPushButton {
             border: none;
@@ -119,6 +121,10 @@ class FileBar(QScrollArea):
                     
                     menu = QMenu(btn)
                     menu.setStyleSheet(self.menuStyles)
+
+                    openAction = menu.addAction("Open")
+                    openAction.triggered.connect(partial(self._openNote, i))
+
                     deleteAction = menu.addAction("Delete")
                     deleteAction.triggered.connect(partial(self._deleteNote, i))
 
@@ -142,3 +148,26 @@ class FileBar(QScrollArea):
 
         if len(self.showenFiles) == 0:
             self.absentFilesLabel.setVisible(True)
+    
+    def _openNote(self, fileName):
+        self.openNoteRequested.emit(fileName)
+
+    def onNoteTitleChanged(self, previousTitle, newTitle):
+        if previousTitle != "":
+            btn = self.buttons.pop(previousTitle)
+            self.buttons[newTitle] = btn
+            self.showenFiles[self.showenFiles.index(previousTitle)] = newTitle
+            btn.setText(newTitle)
+
+            menu = QMenu(btn)
+            menu.setStyleSheet(self.menuStyles)
+
+            openAction = menu.addAction("Open")
+            openAction.triggered.connect(partial(self._openNote, newTitle))
+
+            deleteAction = menu.addAction("Delete")
+            deleteAction.triggered.connect(partial(self._deleteNote, newTitle))
+
+            btn.setMenu(menu)
+
+        self.updateFileList()

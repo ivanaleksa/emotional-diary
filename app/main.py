@@ -30,16 +30,17 @@ class Window(QMainWindow):
         self.sideBar = SideBar()
         self.fileBar = FileBar()
         self.addButton = AddButton()
-        self.note_window = NoteWindow()
-        self.note_window.header.closeRequested.connect(self.note_window._onCloseRequested)
-        self.note_window.windowClosed.connect(self._onNoteWindowClosed)
-        self.note_window.setVisible(False)
+        self.noteWindow = NoteWindow()
+        self.noteWindow.header.closeRequested.connect(self.noteWindow._onCloseRequested)
+        self.noteWindow.windowClosed.connect(self._onNoteWindowClosed)
+        self.noteWindow.titleChanged.connect(self._onNoteTitleChanged)
+        self.noteWindow.setVisible(False)
 
         layout = QGridLayout()
         layout.addWidget(self.sideBar, 0, 0, 2, 1)
         layout.addWidget(self.fileBar, 0, 1, 2, 1)
         layout.addWidget(self.addButton, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.note_window, 0, 2, 2, 2)
+        layout.addWidget(self.noteWindow, 0, 2, 2, 2)
 
         layout.setSpacing(0)
         layout.setColumnStretch(0, 1)
@@ -52,16 +53,26 @@ class Window(QMainWindow):
         self.centralWidget.setLayout(layout)
 
         self.addButton.clicked.connect(self._onAddButtonClicked)
+        self.fileBar.openNoteRequested.connect(self._openNote)  # connect open note action from file bar class
 
     def _onAddButtonClicked(self):
         self.addButton.setVisible(False)
-        self.note_window.setVisible(True)
+        self.noteWindow.setVisible(True)
+
+        self.noteWindow.previousTitle = ""
 
     def _onNoteWindowClosed(self):
-        self.note_window.setVisible(False)
+        self.noteWindow.setVisible(False)
         self.addButton.setVisible(True)
+    
+    def _openNote(self, fileName):
+        self.addButton.setVisible(False)
+        self.noteWindow.setVisible(True)
 
-        self.fileBar.updateFileList()
+        self.noteWindow.setContent(fileName)
+
+    def _onNoteTitleChanged(self, old, new):
+        self.fileBar.onNoteTitleChanged(old, new)
 
 
 if __name__ == "__main__":
