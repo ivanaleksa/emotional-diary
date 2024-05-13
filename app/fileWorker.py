@@ -57,7 +57,7 @@ class FileWorker:
                 }
 
             with open(self.notesDirectory + "/" + title + ".txt", "w", encoding="utf-8") as file:
-                json.dump(self.filesInfo, file)
+                file.write(content)
             
             self._updateMetaInfo()
 
