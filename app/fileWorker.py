@@ -40,24 +40,36 @@ class FileWorker:
         with open(self.notesDirectory + "/" + self.metaFile, "w") as f:
             json.dump(self.filesInfo, f)
     
-    def addNewNote(self, title: str, content: str, emotion: str = ""):
+    def addNewNote(self, title: str, content: str, emotion: str = "", u: bool = False):
         if title != "":
             for c in self.prohibitedChars:
                 title = title.replace(c, "U")
             
-            self.filesInfo[title] = {
+            if title not in self.filesInfo.keys():
+                self.filesInfo[title] = {
                     "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "emotion": [emotion]
-                    }
+                }
+            else:
+                self.filesInfo[title] = {
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "emotion": [emotion] if u else self.filesInfo[title]["emotion"]  # if u then we need to update the note's emotions (yeah,  i know it's ugly)
+                }
 
             with open(self.notesDirectory + "/" + title + ".txt", "w", encoding="utf-8") as file:
-                file.write(content)
-        
+                json.dump(self.filesInfo, file)
+            
             self._updateMetaInfo()
 
     def deleteNode(self, title: str):
         os.remove(self.notesDirectory + "/" + title)
         self._updateMetaInfo()
+    
+    def changeNoteTitle(self, prevTitle: str, newTitle: str):
+        if os.path.exists(self.notesDirectory + "/" + prevTitle + ".txt"):
+            self.filesInfo[newTitle] = self.filesInfo[prevTitle]
+            del self.filesInfo[prevTitle]
+            os.rename(self.notesDirectory + "/" + prevTitle + ".txt", self.notesDirectory + "/" + newTitle + ".txt")
 
     def getFileList(self) -> dict:
         return self.filesInfo
@@ -65,15 +77,14 @@ class FileWorker:
     def getFileInfo(self, title: str):
         """ Returns a dict with fields: content, date, emotion"""
 
-        for f in self.filesInfo:
-            if f["title"] == title:
-                with open(self.notesDirectory + "/" + title, "r") as file:
-                    content = "".join([line for line in file.readlines()])
+        if title in self.filesInfo.keys():
+            with open(self.notesDirectory + "/" + title + ".txt", "r") as file:
+                content = "".join([line for line in file.readlines()])
                 
-                return {
-                    "content": content,
-                    "date": f["date"],
-                    "emotion": f["emotion"]
-                }
+            return {
+                "content": content,
+                "date": self.filesInfo[title]["date"],
+                "emotion": self.filesInfo[title]["emotion"]
+            }
         
         raise FileNotFoundError("There is no such a file")

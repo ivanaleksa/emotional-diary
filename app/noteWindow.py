@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QSize, pyqtSignal
+from PyQt6.QtCore import QSize, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QWidget,
@@ -21,6 +21,7 @@ PREDICTION_MODEL = TFIDFEmotionalModel(model_path="emotion_analyser/model/xgboos
 
 class NoteWindow(QWidget):
     windowClosed = pyqtSignal()
+    titleChanged = pyqtSignal(str, str)
 
     titleInputStyles = """
         QLineEdit {
@@ -68,9 +69,12 @@ class NoteWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.previousTitle = ""
+
         self.titleField = QLineEdit()
         self.titleField.setPlaceholderText("Title")
         self.titleField.setStyleSheet(self.titleInputStyles)
+        self.titleField.editingFinished.connect(self._onTitleChanged)
 
         self.contentField = QTextEdit()
         self.contentField.setPlaceholderText("Your thoughts here...")
@@ -90,9 +94,29 @@ class NoteWindow(QWidget):
 
         self.setLayout(self.emLayout)
     
+    def setContent(self, noteTitle: str):
+        fileContent = FILE_WORKER.getFileInfo(noteTitle)
+
+        self.titleField.setText(noteTitle)
+        self.contentField.setText(fileContent["content"])
+        self.header.emotionContainer.setText(", ".join(fileContent["emotion"]))
+        self.previousTitle = noteTitle
+    
+    @pyqtSlot()
     def _onContentChanged(self):
         if self.contentField.toPlainText():
             FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText())
+    
+    @pyqtSlot()
+    def _onTitleChanged(self):
+        if self.titleField.text() and self.previousTitle != self.titleField.text():
+            FILE_WORKER.changeNoteTitle(self.previousTitle, self.titleField.text())
+
+            # if a user change the note's title and then doesn't change content, the previous title will be saves
+            # to avoid that, let's save all note again
+            FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText())
+            self.titleChanged.emit(self.previousTitle, self.titleField.text())
+            self.previousTitle = self.titleField.text()
 
     def _onCloseRequested(self):
         self.titleField.setText("")
@@ -113,7 +137,7 @@ class NoteWindow(QWidget):
         loadingDialog.close()
 
         self.header.emotionContainer.setText(prediction)
-        FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText(), self.header.emotionContainer.text())
+        FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText(), self.header.emotionContainer.text(), u=True)
 
 
 class NoteWindowHeader(QHBoxLayout):
@@ -146,12 +170,14 @@ class NoteWindowHeader(QHBoxLayout):
 
         self.closeBtn = QPushButton()
         self.closeBtn.setIcon(QIcon("emotion_analyser/app/media/close_icon.png"))
+        self.closeBtn.setToolTip("Save and Close the note")
         self.closeBtn.setIconSize(QSize(25, 25))
         self.closeBtn.setStyleSheet(self.closeButtonStyles)
         self.closeBtn.clicked.connect(self._closeButtonClicked)
 
         self.analyseBtn = QPushButton()
         self.analyseBtn.setIcon(QIcon("emotion_analyser/app/media/analyse_icon.png"))
+        self.analyseBtn.setToolTip("Analyse the note")
         self.analyseBtn.setIconSize(QSize(25, 25))
         self.analyseBtn.setStyleSheet(self.analyseButtonStyles)
         self.analyseBtn.clicked.connect(self._analyseNoteClicked)
