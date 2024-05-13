@@ -8,7 +8,9 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QLabel,
     QPushButton,
-    QApplication
+    QApplication,
+    QCheckBox,
+    QDialog
 )
 
 from .fileBar import FILE_WORKER
@@ -18,6 +20,14 @@ from ..model_service import TFIDFEmotionalModel
 
 PREDICTION_MODEL = TFIDFEmotionalModel(model_path="emotion_analyser/model/xgboost.model", vectorizer_path="emotion_analyser/model/tfidf_vectorizer.pkl")
 
+emotions = {
+    0: "sadness",
+    1: "joy",
+    2: "love",
+    3: "anger",
+    4: "fear",
+    5: "surprise"
+}
 
 class NoteWindow(QWidget):
     windowClosed = pyqtSignal()
@@ -93,6 +103,16 @@ class NoteWindow(QWidget):
         self.emLayout.addWidget(self.contentField)
 
         self.setLayout(self.emLayout)
+
+        self.header.changeEmotionsRequested.connect(self._changeEmotions)
+
+    def _changeEmotions(self):
+        dialog = ChangeEmotionsDialog(self.header.emotionContainer.text().split(", "))
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_emotions = dialog._save_emotions()
+            selected_emotion_ids = [emotion_name for _, emotion_name in emotions.items() if emotion_name in new_emotions]
+            FILE_WORKER.changeEmotions(self.titleField.text(), selected_emotion_ids)
+            self.header.emotionContainer.setText(", ".join(new_emotions))
     
     def setContent(self, noteTitle: str):
         fileContent = FILE_WORKER.getFileInfo(noteTitle)
@@ -137,13 +157,20 @@ class NoteWindow(QWidget):
         loadingDialog.close()
 
         self.header.emotionContainer.setText(prediction)
-        FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText(), self.header.emotionContainer.text(), u=True)
+        FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText(), [self.header.emotionContainer.text()], u=True)
 
 
 class NoteWindowHeader(QHBoxLayout):
     closeRequested = pyqtSignal()
     textChanged = pyqtSignal(str)
+    changeEmotionsRequested = pyqtSignal()
 
+    labelStyles = """
+        QLabel {
+            font-size: 20px;
+            font-weight: bold;
+        }
+    """
     buttonStyles = """
         QPushButton {
             border: none;
@@ -167,6 +194,7 @@ class NoteWindowHeader(QHBoxLayout):
         super().__init__(parent)
 
         self.emotionContainer = QLabel()
+        self.emotionContainer.setStyleSheet(self.labelStyles)
 
         self.closeBtn = QPushButton()
         self.closeBtn.setIcon(QIcon("emotion_analyser/app/media/close_icon.png"))
@@ -182,7 +210,15 @@ class NoteWindowHeader(QHBoxLayout):
         self.analyseBtn.setStyleSheet(self.analyseButtonStyles)
         self.analyseBtn.clicked.connect(self._analyseNoteClicked)
 
+        self.changeEmotionsBtn = QPushButton()
+        self.changeEmotionsBtn.setIcon(QIcon("emotion_analyser/app/media/exchange.png"))
+        self.changeEmotionsBtn.setToolTip("Change Emotions")
+        self.changeEmotionsBtn.setIconSize(QSize(25, 25))
+        self.changeEmotionsBtn.setStyleSheet(self.analyseButtonStyles)
+        self.changeEmotionsBtn.clicked.connect(self._changeEmotionsClicked)
+
         self.addWidget(self.emotionContainer, 10)
+        self.addWidget(self.changeEmotionsBtn, 1)
         self.addWidget(self.analyseBtn, 3)
         self.addWidget(self.closeBtn, 1)
     
@@ -191,3 +227,30 @@ class NoteWindowHeader(QHBoxLayout):
 
     def _analyseNoteClicked(self):
         self.textChanged.emit(self.parent().parent().contentField.toPlainText())
+    
+    def _changeEmotionsClicked(self):
+        self.changeEmotionsRequested.emit()
+
+
+class ChangeEmotionsDialog(QDialog):
+    def __init__(self, current_emotions):
+        super().__init__()
+
+        self.setWindowTitle("Change Emotions")
+        self.setLayout(QVBoxLayout())
+
+        self.emotion_checkboxes = []
+        for emotion_id, emotion_name in emotions.items():
+            checkbox = QCheckBox(emotion_name)
+            checkbox.setChecked(emotion_name in current_emotions)
+            self.layout().addWidget(checkbox)
+            self.emotion_checkboxes.append((emotion_name, checkbox))
+
+        save_button = QPushButton("Save")
+        save_button.clicked.connect(self._save_emotions)
+        self.layout().addWidget(save_button)
+
+    def _save_emotions(self):
+        selected_emotions = [emotion_name for emotion_name, checkbox in self.emotion_checkboxes if checkbox.isChecked()]
+        self.accept()
+        return selected_emotions

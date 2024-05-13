@@ -40,7 +40,7 @@ class FileWorker:
         with open(self.notesDirectory + "/" + self.metaFile, "w") as f:
             json.dump(self.filesInfo, f)
     
-    def addNewNote(self, title: str, content: str, emotion: str = "", u: bool = False):
+    def addNewNote(self, title: str, content: str, emotion: list = [""], u: bool = False):
         if title != "":
             for c in self.prohibitedChars:
                 title = title.replace(c, "U")
@@ -48,17 +48,22 @@ class FileWorker:
             if title not in self.filesInfo.keys():
                 self.filesInfo[title] = {
                     "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "emotion": [emotion]
+                    "emotion": emotion
                 }
             else:
                 self.filesInfo[title] = {
                     "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "emotion": [emotion] if u else self.filesInfo[title]["emotion"]  # if u then we need to update the note's emotions (yeah,  i know it's ugly)
+                    "emotion": emotion if u else self.filesInfo[title]["emotion"]  # if u then we need to update the note's emotions (yeah,  i know it's ugly)
                 }
 
             with open(self.notesDirectory + "/" + title + ".txt", "w", encoding="utf-8") as file:
                 file.write(content)
             
+            self._updateMetaInfo()
+    
+    def changeEmotions(self, title: str, new_emotions: list):
+        if title in self.filesInfo:
+            self.filesInfo[title]["emotion"] = new_emotions
             self._updateMetaInfo()
 
     def deleteNode(self, title: str):
