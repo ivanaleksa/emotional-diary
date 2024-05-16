@@ -4,12 +4,14 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QWidget, 
     QVBoxLayout,
+    QHBoxLayout,
     QPushButton,
     QScrollArea,
     QFrame,
     QLabel,
     QMenu,
-    QMessageBox
+    QMessageBox,
+    QLineEdit
 )
 
 from .fileWorker import FileWorker
@@ -80,6 +82,12 @@ class FileBar(QScrollArea):
             background-color: rgb(122, 122, 122);
         }
     """
+    searchStyles = """
+        QLineEdit {
+            background-color: rgb(185, 185, 185);
+            border: 1px solid rgb(141, 141, 141);
+        }
+    """
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -88,6 +96,17 @@ class FileBar(QScrollArea):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setStyleSheet(self.scrollAreaStyle)
+
+        self.searchLayout = QHBoxLayout()
+        self.searchLayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.searchField = QLineEdit()
+        self.searchField.setPlaceholderText("Search note")
+        self.searchField.setStyleSheet(self.searchStyles)
+        self.searchField.editingFinished.connect(self._searchTextChanged)
+
+        self.searchLayout.addWidget(self.searchField, 1)
+        self.searchLayout.setContentsMargins(0, 0, 0, 5)
+
 
         self.filesWidget = QWidget()
         self.filesLayout = QVBoxLayout(self.filesWidget)
@@ -99,6 +118,8 @@ class FileBar(QScrollArea):
         self.absentFilesLabel = QLabel("There aren't any files yet")
         self.absentFilesLabel.setStyleSheet(self.absentFilesLabelStyles)
         self.absentFilesLabel.setVisible(False)
+
+        self.filesLayout.addLayout(self.searchLayout)
         self.filesLayout.addWidget(self.absentFilesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.showenFiles: list = []
@@ -171,3 +192,22 @@ class FileBar(QScrollArea):
             btn.setMenu(menu)
 
         self.updateFileList()
+    
+    def _searchTextChanged(self):
+        text = self.searchField.text()
+
+        # Очищаем текущий список файлов
+        for i in reversed(range(self.filesLayout.count())):
+            widget = self.filesLayout.itemAt(i).widget()
+            if widget is not None:
+                widget.setParent(None)
+
+        # Если строка поиска пуста, обновляем список всех файлов
+        if not text:
+            for file_name in self.showenFiles:
+                self.filesLayout.addWidget(self.buttons[file_name])
+
+        # Иначе отображаем только файлы, содержащие введенную подстроку в названии
+        for file_name in self.showenFiles:
+            if text.lower() in file_name.lower():
+                self.filesLayout.addWidget(self.buttons[file_name])
