@@ -1,6 +1,7 @@
 from functools import partial
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QSize
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QWidget, 
     QVBoxLayout,
@@ -88,6 +89,15 @@ class FileBar(QScrollArea):
             border: 1px solid rgb(141, 141, 141);
         }
     """
+    buttonStyles = """
+        QPushButton {
+            border-radius: 5px;
+            padding: 5px;
+        }
+        QPushButton:hover{
+            background-color: #d9d9d9;
+        }
+    """
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -97,15 +107,29 @@ class FileBar(QScrollArea):
         self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setStyleSheet(self.scrollAreaStyle)
 
-        self.searchLayout = QHBoxLayout()
-        self.searchLayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.searchField = QLineEdit()
         self.searchField.setPlaceholderText("Search note")
         self.searchField.setStyleSheet(self.searchStyles)
         self.searchField.editingFinished.connect(self._searchTextChanged)
 
-        self.searchLayout.addWidget(self.searchField, 1)
-        self.searchLayout.setContentsMargins(0, 0, 0, 5)
+        self.sortBtn = QPushButton()
+        self.sortBtn.setIcon(QIcon("emotion_analyser/app/media/sort.png"))
+        self.sortBtn.setToolTip("Sort notes")
+        self.sortBtn.setIconSize(QSize(17, 17))
+        self.sortBtn.setStyleSheet(self.buttonStyles)
+
+        self.filterBtn = QPushButton()
+        self.filterBtn.setIcon(QIcon("emotion_analyser/app/media/filter.png"))
+        self.filterBtn.setToolTip("Filter notes")
+        self.filterBtn.setIconSize(QSize(17, 17))
+        self.filterBtn.setStyleSheet(self.buttonStyles)
+
+        self.searchLayout = QHBoxLayout()
+        self.searchLayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.searchLayout.addWidget(self.searchField, 5)
+        self.searchLayout.addWidget(self.sortBtn, 1)
+        self.searchLayout.addWidget(self.filterBtn, 1)
+        self.searchLayout.setContentsMargins(0, 0, 25, 5)
 
 
         self.filesWidget = QWidget()
