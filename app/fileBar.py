@@ -12,8 +12,11 @@ from PyQt6.QtWidgets import (
     QLabel,
     QMenu,
     QMessageBox,
-    QLineEdit
+    QLineEdit,
+    QDialog,
+    QDateEdit
 )
+from datetime import datetime
 
 from .fileWorker import FileWorker
 
@@ -117,12 +120,14 @@ class FileBar(QScrollArea):
         self.sortBtn.setToolTip("Sort notes")
         self.sortBtn.setIconSize(QSize(17, 17))
         self.sortBtn.setStyleSheet(self.buttonStyles)
+        self.sortBtn.clicked.connect(self._sortButtonClicked)
 
         self.filterBtn = QPushButton()
         self.filterBtn.setIcon(QIcon("emotion_analyser/app/media/filter.png"))
         self.filterBtn.setToolTip("Filter notes")
         self.filterBtn.setIconSize(QSize(17, 17))
         self.filterBtn.setStyleSheet(self.buttonStyles)
+        self.filterBtn.clicked.connect(self._filterButtonClicked)
 
         self.searchLayout = QHBoxLayout()
         self.searchLayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -235,3 +240,176 @@ class FileBar(QScrollArea):
         for file_name in self.showenFiles:
             if text.lower() in file_name.lower():
                 self.filesLayout.addWidget(self.buttons[file_name])
+    
+    def _sortButtonClicked(self):
+        sortDialog = SortDialog(self)
+        sortDialog.sortRequested.connect(self._sortFiles)
+        sortDialog.exec()
+
+    def _filterButtonClicked(self):
+        filterDialog = FilterDialog(self)
+        filterDialog.filterRequested.connect(self._filterFiles)
+        filterDialog.exec()
+    
+    def _sortFiles(self, criterion):
+        files = FILE_WORKER.getFileList()
+        if criterion == 'alphabet':
+            sorted_files = dict(sorted(files.items()))
+        elif criterion == 'date':
+            sorted_files = dict(sorted(files.items(), key=lambda item: datetime.strptime(item[1]['date'], "%Y-%m-%d %H:%M:%S")))
+
+        self._updateFileListWithNewOrder(sorted_files)
+
+    def _filterFiles(self, start_date, end_date):
+        files = FILE_WORKER.getFileList()
+
+        start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
+        filtered_files = {k: v for k, v in files.items() if start_date.date() <= datetime.strptime(v['date'], "%Y-%m-%d %H:%M:%S").date() <= end_date.date()}
+
+        self._updateFileListWithNewOrder(filtered_files)
+
+    def _updateFileListWithNewOrder(self, files):
+        self.showenFiles = []
+        self.buttons = {}
+
+        self.absentFilesLabel.setVisible(False)
+
+        for i in reversed(range(self.filesLayout.count())):
+            widget = self.filesLayout.itemAt(i).widget()
+            if widget and widget != self.searchField and widget != self.sortBtn and widget != self.filterBtn:
+                widget.setParent(None)
+
+        for i in files.keys():
+            btn = QPushButton(i)
+            btn.setStyleSheet(self.fileButtonStyle)
+            btn.setToolTip(f"{files[i]['date']}\n{' ,'.join(files[i]['emotion'])}")
+
+            menu = QMenu(btn)
+            menu.setStyleSheet(self.menuStyles)
+
+            openAction = menu.addAction("Open")
+            openAction.triggered.connect(partial(self._openNote, i))
+
+            deleteAction = menu.addAction("Delete")
+            deleteAction.triggered.connect(partial(self._deleteNote, i))
+
+            btn.setMenu(menu)
+
+            self.filesLayout.addWidget(btn)
+            self.showenFiles.append(i)
+            self.buttons[i] = btn
+
+
+
+class SortDialog(QDialog):
+    sortRequested = pyqtSignal(str)
+
+    buttonsStyles = """
+        QPushButton {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            font-weight: bold;
+            padding: 10px 20px;
+        }
+        QPushButton:hover {
+            background-color: #d3d3d3;
+        }
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Sort notes")
+        self.setLayout(QVBoxLayout())
+
+        alphabetBtn = QPushButton("Alphabetically")
+        alphabetBtn.clicked.connect(self._sortAlphabetically)
+
+        dateBtn = QPushButton("By Date")
+        dateBtn.clicked.connect(self._sortByDate)
+
+        self.layout().addWidget(alphabetBtn)
+        self.layout().addWidget(dateBtn)
+
+        alphabetBtn.setStyleSheet(self.buttonsStyles)
+        dateBtn.setStyleSheet(self.buttonsStyles)
+
+    def _sortAlphabetically(self):
+        self.sortRequested.emit('alphabet')
+        self.accept()
+
+    def _sortByDate(self):
+        self.sortRequested.emit('date')
+        self.accept()
+
+
+class FilterDialog(QDialog):
+    filterRequested = pyqtSignal(str, str)
+
+    buttonStyles = """
+        QPushButton {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            font-weight: bold;
+            padding: 10px 20px;
+        }
+        QPushButton:hover {
+            background-color: #d3d3d3;
+        }
+    """
+
+    dateStyles = """
+        QDateEdit {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            font-weight: bold;
+        }
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Filter notes")
+        self.setLayout(QVBoxLayout())
+
+        self.startDateEdit = QDateEdit()
+        self.endDateEdit = QDateEdit()
+
+        startDateLabel = QLabel("Start Date:")
+        endDateLabel = QLabel("End Date:")
+        confirmBtn = QPushButton("Filter")
+        confirmBtn.clicked.connect(self._filterNotes)
+
+        startDateLayout = QHBoxLayout()
+        startDateLayout.addWidget(startDateLabel)
+        startDateLayout.addWidget(self.startDateEdit)
+
+        endDateLayout = QHBoxLayout()
+        endDateLayout.addWidget(endDateLabel)
+        endDateLayout.addWidget(self.endDateEdit)
+
+        confirmLayout = QHBoxLayout()
+        confirmLayout.addWidget(confirmBtn)
+
+        self.layout().addLayout(startDateLayout)
+        self.layout().addLayout(endDateLayout)
+        self.layout().addLayout(confirmLayout)
+
+        # Применим стилизацию к кнопкам
+        confirmBtn.setStyleSheet(self.buttonStyles)
+
+        # Применим стилизацию к меткам
+        startDateLabel.setStyleSheet("font-weight: bold;")
+        endDateLabel.setStyleSheet("font-weight: bold;")
+
+        # Применим стилизацию к полям ввода дат
+        self.startDateEdit.setStyleSheet(self.dateStyles)
+        self.endDateEdit.setStyleSheet(self.dateStyles)
+
+    def _filterNotes(self):
+        start_date = self.startDateEdit.date().toString("yyyy-MM-dd")
+        end_date = self.endDateEdit.date().toString("yyyy-MM-dd")
+        self.filterRequested.emit(start_date, end_date)
+        self.accept()
