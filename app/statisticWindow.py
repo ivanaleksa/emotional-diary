@@ -1,3 +1,5 @@
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QBrush, QColor, QFont
 import matplotlib.pyplot as plt
 from datetime import datetime
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -7,19 +9,36 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QDateEdit,
     QLabel,
-    QHBoxLayout
+    QHBoxLayout,
+    QCalendarWidget
 )
-from PyQt6.QtCore import QDate
 from .fileWorker import FileWorker
 
 FILE_WORKER = FileWorker()
 
 
 class AnalyticsWidget(QWidget):
+    combo_box_style = """
+    QComboBox {
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        padding: 4px;
+        font-size: 14px;
+    }
+    """
+    label_style = """
+    QLabel {
+        font-size: 18px;
+        color: black;
+        font-weight: bold;
+    }
+    """
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setLayout(QVBoxLayout())
+        calendar = CalendarWidget()
 
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
@@ -34,15 +53,18 @@ class AnalyticsWidget(QWidget):
         self.dateLabel = QLabel("Select Date:")
         self.dateEdit.setCalendarPopup(True)
         self.dateEdit.setVisible(True)
+        self.dateEdit.setCalendarWidget(CalendarWidget())
 
         self.weekDateEdit = QDateEdit()
         self.weekLabel = QLabel("Select Week:")
         self.weekDateEdit.setCalendarPopup(True)
         self.weekDateEdit.setVisible(False)
         self.weekLabel.setVisible(False)
+        self.weekDateEdit.setCalendarWidget(CalendarWidget())
 
         self.monthDateEdit = QDateEdit()
         self.monthDateEdit.setCalendarPopup(True)
+        self.monthDateEdit.setCalendarWidget(CalendarWidget())
         self.monthLabel = QLabel("Select Month:")
         self.monthDateEdit.setVisible(False)
         self.monthLabel.setVisible(False)
@@ -59,6 +81,11 @@ class AnalyticsWidget(QWidget):
         self.dateEdit.dateChanged.connect(self.update_chart)
         self.weekDateEdit.dateChanged.connect(self.update_chart)
         self.monthDateEdit.dateChanged.connect(self.update_chart)
+
+        self.dateLabel.setStyleSheet(self.label_style)
+        self.weekLabel.setStyleSheet(self.label_style)
+        self.monthLabel.setStyleSheet(self.label_style)
+        self.comboBox.setStyleSheet(self.combo_box_style)
 
         self.update_chart()
 
@@ -91,7 +118,7 @@ class AnalyticsWidget(QWidget):
             elif period == "Week" and date.isocalendar()[1] == selected_week_date.isocalendar()[1] and date.year == selected_week_date.year:
                 dates.append(date)
                 emotions.append(value['emotion'])
-            elif period == "Month" and date.month == selected_month and date.year == selected_year and date.year == selected_month_date.year:
+            elif period == "Month" and date.month == selected_month and date.year == selected_year:
                 dates.append(date)
                 emotions.append(value['emotion'])
 
@@ -115,3 +142,35 @@ class AnalyticsWidget(QWidget):
         ax.set_xticklabels(emotion_counts.keys())
         ax.set_title(f"Notes count per {period.lower()}")
         self.canvas.draw()
+
+
+class CalendarWidget(QCalendarWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        
+        self.setStyleSheet("color: black;")
+        self.setStyleSheet("""
+        QToolButton {
+            color: black;
+        }
+        #qt_calendar_prevmonth, #qt_calendar_nextmonth{
+            qproperty-iconSize: 0px
+        }
+        QCalendarWidget QTableView {
+                selection-background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1,
+                            stop: 0 rgba(57, 128, 233, 255),
+                            stop: 1 rgba(0, 255, 68, 255));
+            }
+        """)
+    
+        self.setGridVisible(True)
+
+        saturday_format = self.weekdayTextFormat(Qt.DayOfWeek.Saturday)
+        saturday_format.setForeground(QBrush(QColor(Qt.GlobalColor.black)))
+        saturday_format.setFontWeight(QFont.Weight.Bold)
+        self.setWeekdayTextFormat(Qt.DayOfWeek.Saturday, saturday_format)
+        
+        sunday_format = self.weekdayTextFormat(Qt.DayOfWeek.Sunday)
+        sunday_format.setForeground(QBrush(QColor(Qt.GlobalColor.black)))
+        sunday_format.setFontWeight(QFont.Weight.Bold)
+        self.setWeekdayTextFormat(Qt.DayOfWeek.Sunday, sunday_format)
