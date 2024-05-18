@@ -81,7 +81,7 @@ class Window(QMainWindow):
     def _showAnalyticsWidget(self):
         self.layoutMain.setSpacing(0)
         self.layoutMain.setColumnStretch(0, 1)
-        self.layoutMain.setColumnStretch(1, 18)
+        self.layoutMain.setColumnStretch(1, 26)
         self.layoutMain.setColumnStretch(2, 0)
         self.layoutMain.setColumnStretch(3, 0)
         self.layoutMain.setRowStretch(0, 1)
