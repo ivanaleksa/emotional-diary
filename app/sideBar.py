@@ -24,18 +24,19 @@ class SideBar(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
-        """ Set all buttons' settings """
-        filesButton, analiticsButton = QPushButton(), QPushButton()
-        filesButton.setToolTip("Files")
-        analiticsButton.setToolTip("Analitics")
-        filesButton.setIcon(QIcon("emotion_analyser/app/media/files_icon.png"))
-        analiticsButton.setIcon(QIcon("emotion_analyser/app/media/analytics_icon.png"))
-        filesButton.setIconSize(QSize(25, 25))
-        analiticsButton.setIconSize(QSize(25, 25))
-        filesButton.setStyleSheet(self.buttonStyle)
-        analiticsButton.setStyleSheet(self.buttonStyle)
+        self.filesButton = QPushButton()
+        self.analiticsButton = QPushButton()
+        self.filesButton.setToolTip("Files")
+        self.analiticsButton.setToolTip("Analytics")
+        self.filesButton.setIcon(QIcon("emotion_analyser/app/media/files_icon.png"))
+        self.analiticsButton.setIcon(QIcon("emotion_analyser/app/media/analytics_icon.png"))
+        self.filesButton.setIconSize(QSize(25, 25))
+        self.analiticsButton.setIconSize(QSize(25, 25))
+        self.filesButton.setStyleSheet(self.buttonStyle)
+        self.analiticsButton.setStyleSheet(self.buttonStyle)
 
         sideBarLayout = QVBoxLayout()
         self.setLayout(sideBarLayout)
-        sideBarLayout.addWidget(analiticsButton, alignment=Qt.AlignmentFlag.AlignHCenter)
-        sideBarLayout.addWidget(filesButton, alignment=Qt.AlignmentFlag.AlignHCenter)
+        sideBarLayout.addWidget(self.analiticsButton, alignment=Qt.AlignmentFlag.AlignHCenter)
+        sideBarLayout.addWidget(self.filesButton, alignment=Qt.AlignmentFlag.AlignHCenter)
+

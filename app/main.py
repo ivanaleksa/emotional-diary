@@ -11,6 +11,7 @@ from .sideBar import SideBar
 from .fileBar import FileBar
 from .addButton import AddButton
 from .noteWindow import NoteWindow
+from .statisticWindow import AnalyticsWidget
 
 
 class Window(QMainWindow):
@@ -29,6 +30,8 @@ class Window(QMainWindow):
     def _appUp(self):
         self.sideBar = SideBar()
         self.fileBar = FileBar()
+        self.analyticsWidget = AnalyticsWidget()
+
         self.addButton = AddButton()
         self.noteWindow = NoteWindow()
         self.noteWindow.header.closeRequested.connect(self.noteWindow._onCloseRequested)
@@ -36,24 +39,58 @@ class Window(QMainWindow):
         self.noteWindow.titleChanged.connect(self._onNoteTitleChanged)
         self.noteWindow.setVisible(False)
 
-        layout = QGridLayout()
-        layout.addWidget(self.sideBar, 0, 0, 2, 1)
-        layout.addWidget(self.fileBar, 0, 1, 2, 1)
-        layout.addWidget(self.addButton, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.noteWindow, 0, 2, 2, 2)
+        self.layoutMain = QGridLayout()
+        self.layoutMain.addWidget(self.sideBar, 0, 0, 2, 1)
+        self.layoutMain.addWidget(self.fileBar, 0, 1, 2, 1)
+        self.layoutMain.addWidget(self.analyticsWidget, 0, 1, 2, 1)
+        self.layoutMain.addWidget(self.addButton, 0, 2, 2, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.layoutMain.addWidget(self.noteWindow, 0, 2, 2, 2)
 
-        layout.setSpacing(0)
-        layout.setColumnStretch(0, 1)
-        layout.setColumnStretch(1, 6)
-        layout.setColumnStretch(2, 8)
-        layout.setColumnStretch(3, 12)
-        layout.setRowStretch(0, 1)
-        layout.setRowStretch(1, 5)
+        self.layoutMain.setSpacing(0)
+        self.layoutMain.setColumnStretch(0, 1)
+        self.layoutMain.setColumnStretch(1, 6)
+        self.layoutMain.setColumnStretch(2, 8)
+        self.layoutMain.setColumnStretch(3, 12)
+        self.layoutMain.setRowStretch(0, 1)
+        self.layoutMain.setRowStretch(1, 5)
 
-        self.centralWidget.setLayout(layout)
+        self.centralWidget.setLayout(self.layoutMain)
 
         self.addButton.clicked.connect(self._onAddButtonClicked)
-        self.fileBar.openNoteRequested.connect(self._openNote)  # connect open note action from file bar class
+        self.fileBar.openNoteRequested.connect(self._openNote)
+
+        self.sideBar.filesButton.clicked.connect(self._showFileBar)
+        self.sideBar.analiticsButton.clicked.connect(self._showAnalyticsWidget)
+
+        self.analyticsWidget.setVisible(False)
+
+    def _showFileBar(self):
+        self.layoutMain.setSpacing(0)
+        self.layoutMain.setColumnStretch(0, 1)
+        self.layoutMain.setColumnStretch(1, 6)
+        self.layoutMain.setColumnStretch(2, 8)
+        self.layoutMain.setColumnStretch(3, 12)
+        self.layoutMain.setRowStretch(0, 1)
+        self.layoutMain.setRowStretch(1, 5)
+
+        self.fileBar.setVisible(True)
+        self.addButton.setVisible(True)
+        self.noteWindow.setVisible(False)
+        self.analyticsWidget.setVisible(False)
+
+    def _showAnalyticsWidget(self):
+        self.layoutMain.setSpacing(0)
+        self.layoutMain.setColumnStretch(0, 1)
+        self.layoutMain.setColumnStretch(1, 12)
+        self.layoutMain.setColumnStretch(2, 0)
+        self.layoutMain.setColumnStretch(3, 0)
+        self.layoutMain.setRowStretch(0, 1)
+        self.layoutMain.setRowStretch(1, 5)
+
+        self.fileBar.setVisible(False)
+        self.addButton.setVisible(False)
+        self.noteWindow.setVisible(False)
+        self.analyticsWidget.setVisible(True)
 
     def _onAddButtonClicked(self):
         self.addButton.setVisible(False)
