@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QDate
 from PyQt6.QtGui import QBrush, QColor, QFont
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -50,12 +50,14 @@ class AnalyticsWidget(QWidget):
         self.layout().addWidget(self.comboBox)
 
         self.dateEdit = QDateEdit()
+        self.dateEdit.setDate(QDate.currentDate())
         self.dateLabel = QLabel("Select Date:")
         self.dateEdit.setCalendarPopup(True)
         self.dateEdit.setVisible(True)
         self.dateEdit.setCalendarWidget(CalendarWidget())
 
         self.weekDateEdit = QDateEdit()
+        self.weekDateEdit.setDate(QDate.currentDate())
         self.weekLabel = QLabel("Select Week:")
         self.weekDateEdit.setCalendarPopup(True)
         self.weekDateEdit.setVisible(False)
@@ -63,6 +65,7 @@ class AnalyticsWidget(QWidget):
         self.weekDateEdit.setCalendarWidget(CalendarWidget())
 
         self.monthDateEdit = QDateEdit()
+        self.monthDateEdit.setDate(QDate.currentDate())
         self.monthDateEdit.setCalendarPopup(True)
         self.monthDateEdit.setCalendarWidget(CalendarWidget())
         self.monthLabel = QLabel("Select Month:")
