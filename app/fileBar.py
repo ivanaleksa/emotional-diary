@@ -1,6 +1,6 @@
 from functools import partial
 
-from PyQt6.QtCore import Qt, pyqtSignal, QSize
+from PyQt6.QtCore import Qt, pyqtSignal, QSize, QDate
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QWidget, 
@@ -376,6 +376,8 @@ class FilterDialog(QDialog):
 
         self.startDateEdit = QDateEdit()
         self.endDateEdit = QDateEdit()
+        self.startDateEdit.setDate(QDate.currentDate())
+        self.endDateEdit.setDate(QDate.currentDate())
 
         startDateLabel = QLabel("Start Date:")
         endDateLabel = QLabel("End Date:")
