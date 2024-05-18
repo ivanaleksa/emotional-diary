@@ -38,7 +38,6 @@ class AnalyticsWidget(QWidget):
         super().__init__(parent)
 
         self.setLayout(QVBoxLayout())
-        calendar = CalendarWidget()
 
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
@@ -113,7 +112,7 @@ class AnalyticsWidget(QWidget):
 
         dates = []
         emotions = []
-        for key, value in data.items():
+        for _, value in data.items():
             date = datetime.strptime(value['date'], "%Y-%m-%d %H:%M:%S")
             if period == "Day" and date.date() == selected_date:
                 dates.append(date)
