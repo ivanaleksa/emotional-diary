@@ -25,6 +25,10 @@ class AnalyticsWidget(QWidget):
         padding: 4px;
         font-size: 14px;
     }
+    QComboBox::drop-down {
+        border: none;
+        background: transparent;
+    }
     """
     label_style = """
     QLabel {
