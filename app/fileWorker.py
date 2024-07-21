@@ -18,10 +18,10 @@ class FileWorker:
     def __init__(self):
         if not os.path.exists(self.notesDirectory):
             os.makedirs(self.notesDirectory)
-            with open(self.notesDirectory + "/" + self.metaFile, "w") as f:
+            with open(self.notesDirectory + "/" + self.metaFile, "w", encoding="utf-8") as f:
                 json.dump({}, f)
         
-        with open(self.notesDirectory + "/" + self.metaFile, "r") as f:
+        with open(self.notesDirectory + "/" + self.metaFile, "r", encoding="utf-8") as f:
             self.filesInfo: dict = json.load(f)
         
         self._updateMetaInfo()
@@ -37,7 +37,7 @@ class FileWorker:
         for key in keys_to_delete:
             del self.filesInfo[key]
         
-        with open(self.notesDirectory + "/" + self.metaFile, "w") as f:
+        with open(self.notesDirectory + "/" + self.metaFile, "w", encoding="utf-8") as f:
             json.dump(self.filesInfo, f)
     
     def addNewNote(self, title: str, content: str, emotion: list = [""], u: bool = False):
@@ -83,7 +83,7 @@ class FileWorker:
         """ Returns a dict with fields: content, date, emotion"""
 
         if title in self.filesInfo.keys():
-            with open(self.notesDirectory + "/" + title + ".txt", "r") as file:
+            with open(self.notesDirectory + "/" + title + ".txt", "r", encoding="utf-8") as file:
                 content = "".join([line for line in file.readlines()])
                 
             return {
