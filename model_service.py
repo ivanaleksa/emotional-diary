@@ -3,6 +3,9 @@ import pickle
 import requests
 import re
 from abc import ABC, abstractmethod
+import torch
+from transformers import RobertaTokenizer, RobertaForSequenceClassification
+from googletrans import Translator
 
 import xgboost as xgb
 import nltk
@@ -95,9 +98,59 @@ class TFIDFEmotionalModel(AbstractModel):
         return TFIDFEmotionalModel.emotions[self.xgb_model.predict(vector)[0]]
 
 
-if __name__ == "__main__":
-    model = TFIDFEmotionalModel("model/xgboost.model", "model/tfidf_vectorizer.pkl")
-    while True:
-        s = input("Input your text: ")
+class RoBertaModel(AbstractModel):
+    emotions = {
+        0: "afraid",
+        1: "angry",
+        2: "anxious",
+        3: "ashamed",
+        4: "awkward",
+        5: "bored",
+        6: "calm",
+        7: "confused",
+        8: "disgusted",
+        9: "excited",
+        10: "frustrated",
+        11: "happy",
+        12: "jealous",
+        13: "nostalgic",
+        14: "proud",
+        15: "sad",
+        16: "satisfied",
+        17: "surprised"
+    }
 
-        print(model.predict(s))
+    def __init__(self, model_path: str):
+        self.model_path = model_path
+
+        self.model = RobertaForSequenceClassification.from_pretrained('roberta-base', num_labels=len(self.emotions))
+        self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+        self.model.eval()
+
+        self.tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+
+        self.translator = Translator()
+
+    def _validation(self, text: str) -> bool:
+        if re.match(r'^[a-zA-Z0-9\s.,!?\'\"]+$', text):
+            return True
+        else:
+            return False
+    
+    def _preprocessing(self, text: str) -> str:
+        if not self._validation(text):
+            translated = self.translator.translate(text, dest='en').text
+        else:
+            translated = text
+        
+        inputs = self.tokenizer(translated, return_tensors="pt", padding=True, truncation=True, max_length=512)
+        return inputs
+
+    def predict(self, text: str, threshold: float = 0.01) -> dict:
+        inputs = self._preprocessing(text)
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            probabilities = torch.softmax(outputs.logits, dim=-1).cpu().numpy()
+
+        emotion_probabilities = {self.emotions[i]: prob * 100 for i, prob in enumerate(probabilities[0]) if prob > threshold}
+        return emotion_probabilities
