@@ -15,19 +15,11 @@ from PyQt6.QtWidgets import (
 
 from .fileBar import FILE_WORKER
 from .preloaderDialog import LoadingDialog
-from ..model_service import TFIDFEmotionalModel
+from ..model_service import RoBertaModel
 
 
-PREDICTION_MODEL = TFIDFEmotionalModel(model_path="emotion_analyser/model/xgboost.model", vectorizer_path="emotion_analyser/model/tfidf_vectorizer.pkl")
+PREDICTION_MODEL = RoBertaModel('emotion_analyser/model/nlp_model.pt')
 
-emotions = {
-    0: "sadness",
-    1: "joy",
-    2: "love",
-    3: "anger",
-    4: "fear",
-    5: "surprise"
-}
 
 class NoteWindow(QWidget):
     windowClosed = pyqtSignal()
@@ -110,7 +102,7 @@ class NoteWindow(QWidget):
         dialog = ChangeEmotionsDialog(self.header.emotionContainer.text().split(", "))
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_emotions = dialog._save_emotions()
-            selected_emotion_ids = [emotion_name for _, emotion_name in emotions.items() if emotion_name in new_emotions]
+            selected_emotion_ids = [emotion_name for _, emotion_name in PREDICTION_MODEL.emotions.items() if emotion_name in new_emotions]
             FILE_WORKER.changeEmotions(self.titleField.text(), selected_emotion_ids)
             self.header.emotionContainer.setText(", ".join(new_emotions))
     
@@ -156,8 +148,8 @@ class NoteWindow(QWidget):
 
         loadingDialog.close()
 
-        self.header.emotionContainer.setText(prediction)
-        FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText(), [self.header.emotionContainer.text()], u=True)
+        self.header.emotionContainer.setText(", ".join(prediction))
+        FILE_WORKER.addNewNote(self.titleField.text(), self.contentField.toPlainText(), self.header.emotionContainer.text().split(", "), u=True)
 
 
 class NoteWindowHeader(QHBoxLayout):
@@ -240,7 +232,7 @@ class ChangeEmotionsDialog(QDialog):
         self.setLayout(QVBoxLayout())
 
         self.emotion_checkboxes = []
-        for emotion_id, emotion_name in emotions.items():
+        for emotion_id, emotion_name in PREDICTION_MODEL.emotions.items():
             checkbox = QCheckBox(emotion_name)
             checkbox.setChecked(emotion_name in current_emotions)
             self.layout().addWidget(checkbox)

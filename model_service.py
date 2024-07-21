@@ -3,6 +3,7 @@ import pickle
 import requests
 import re
 from abc import ABC, abstractmethod
+import logging
 import torch
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
 from googletrans import Translator
@@ -122,6 +123,7 @@ class RoBertaModel(AbstractModel):
 
     def __init__(self, model_path: str):
         self.model_path = model_path
+        logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
 
         self.model = RobertaForSequenceClassification.from_pretrained('roberta-base', num_labels=len(self.emotions))
         self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
@@ -146,11 +148,13 @@ class RoBertaModel(AbstractModel):
         inputs = self.tokenizer(translated, return_tensors="pt", padding=True, truncation=True, max_length=512)
         return inputs
 
-    def predict(self, text: str, threshold: float = 0.01) -> dict:
+    def predict(self, text: str) -> dict:
         inputs = self._preprocessing(text)
         with torch.no_grad():
             outputs = self.model(**inputs)
             probabilities = torch.softmax(outputs.logits, dim=-1).cpu().numpy()
 
-        emotion_probabilities = {self.emotions[i]: prob * 100 for i, prob in enumerate(probabilities[0]) if prob > threshold}
-        return emotion_probabilities
+        emotion_probabilities = {self.emotions[i]: prob * 100 for i, prob in enumerate(probabilities[0])}
+        top_3_emotions = dict(sorted(emotion_probabilities.items(), key=lambda item: item[1], reverse=True)[:3])
+        
+        return list(top_3_emotions.keys())

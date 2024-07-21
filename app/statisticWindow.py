@@ -131,6 +131,7 @@ class AnalyticsWidget(QWidget):
                 dates.append(date)
                 emotions.append(value['emotion'])
 
+        colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f"]
         if period == "Time of Day":
             time_ranges = {
                 "Morning": (time(5, 0), time(11, 0)),
@@ -139,7 +140,8 @@ class AnalyticsWidget(QWidget):
                 "Night": (time(23, 0), time(5, 0)),
             }
             week_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-            time_of_day_data = {day: {period: {emotion: 0 for emotion in ["anger", "fear", "joy", "sadness", "surprise", "love"]} for period in time_ranges.keys()} for day in week_days}
+            emotion_list = ["afraid", "angry", "anxious", "ashamed", "awkward", "bored", "calm", "confused", "disgusted", "excited", "frustrated", "happy", "jealous", "nostalgic", "proud", "sad", "satisfied", "surprised"]
+            time_of_day_data = {day: {period: {emotion: 0 for emotion in emotion_list} for period in time_ranges.keys()} for day in week_days}
             
             for date, emotion_list in zip(dates, emotions):
                 day_name = week_days[date.weekday()]
@@ -151,7 +153,6 @@ class AnalyticsWidget(QWidget):
             
             self.figure.clear()
             ax = self.figure.add_subplot(111)
-            colors = ["#FF5733", "#C70039", "#FFC300", "#DAF7A6", "#581845", "#900C3F"]
             bar_width = 0.2
             for i, (day_name, periods) in enumerate(time_of_day_data.items()):
                 for j, (period_name, emotions) in enumerate(periods.items()):
@@ -173,7 +174,7 @@ class AnalyticsWidget(QWidget):
             ax.grid(axis="y", linestyle='dashed', linewidth=1)
             self.canvas.draw()
         else:
-            emotion_counts = {emotion: 0 for emotion in ["anger", "fear", "joy", "sadness", "surprise", "love"]}
+            emotion_counts = {emotion: 0 for emotion in ["afraid", "angry", "anxious", "ashamed", "awkward", "bored", "calm", "confused", "disgusted", "excited", "frustrated", "happy", "jealous", "nostalgic", "proud", "sad", "satisfied", "surprised"]}
             for emotion_list in emotions:
                 for emotion in emotion_list:
                     if emotion in emotion_counts:
@@ -181,7 +182,6 @@ class AnalyticsWidget(QWidget):
 
             self.figure.clear()
             ax = self.figure.add_subplot(111)
-            colors = ["#FF5733", "#C70039", "#FFC300", "#DAF7A6", "#581845", "#900C3F"]
             bar_positions = list(range(len(emotion_counts)))
             bar_heights = list(emotion_counts.values())
             bar_colors = colors[:len(emotion_counts)]
@@ -189,7 +189,7 @@ class AnalyticsWidget(QWidget):
             bars = ax.bar(bar_positions, bar_heights, color=bar_colors)
 
             ax.set_xticks(bar_positions)
-            ax.set_xticklabels(emotion_counts.keys())
+            ax.set_xticklabels(emotion_counts.keys(), rotation=45, ha='right')
             ax.set_title(f"Notes count per {period.lower()}")
             ax.grid(axis="y", linestyle='dashed', linewidth=1)
             self.canvas.draw()
